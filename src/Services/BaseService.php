@@ -5,7 +5,9 @@ use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Exceptions\InternalServerErrorException;
 use DreamFactory\Core\Utility\Session;
 use DreamFactory\Managed\Enums\GelfLevels;
+use DreamFactory\Managed\Support\GelfMessage;
 use Psr\Log\LoggerInterface;
+use Config;
 
 abstract class BaseService extends BaseRestService
 {
@@ -26,13 +28,44 @@ abstract class BaseService extends BaseRestService
         $this->setLogger($config);
     }
 
-    abstract protected function setLogger();
+    abstract protected function setLogger($config);
 
     protected function handlePOST()
     {
-        $level = (!empty($this->resource))? strtoupper($this->resource) : 'INFO';
+        $level = 'INFO';
+        if($this->resource !== $this->resourcePath){
+            $level = strtoupper($this->resource);
+        }
         $level = GelfLevels::toValue($level);
+        $message = str_replace($this->resource . '/', null, $this->resourcePath);
+        $context = array_merge(
+            ['_event' => $this->getRequestInfo()],
+            ['_platform' => $this->getPlatformInfo()]
+        );
 
-        $this->logger->log($level, 'test', Session::getPublicInfo());
+        $result = $this->logger->log($level, $message, $context);
+
+        return $result;
+    }
+
+    protected function handlePUT()
+    {
+        return $this->handlePOST();
+    }
+
+    protected function getRequestInfo()
+    {
+        return [
+            'request' => $this->request->toArray(),
+            'resource' => $this->resourcePath
+        ];
+    }
+
+    protected function getPlatformInfo()
+    {
+        return [
+            'config'  => Config::get('df'),
+            'session' => Session::all(),
+        ];
     }
 }

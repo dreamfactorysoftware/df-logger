@@ -4,7 +4,7 @@ namespace DreamFactory\Core\Logger;
 use DreamFactory\Core\Components\ServiceDocBuilder;
 use DreamFactory\Core\Enums\ServiceTypeGroups;
 use DreamFactory\Core\Logger\Services\Logstash;
-use DreamFactory\Core\Models\LogstashConfig;
+use DreamFactory\Core\Logger\Models\LogstashConfig;
 use DreamFactory\Core\Services\ServiceManager;
 use DreamFactory\Core\Services\ServiceType;
 

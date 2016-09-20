@@ -1,5 +1,7 @@
 <?php
-namespace DreamFactory\Core\Models;
+namespace DreamFactory\Core\Logger\Models;
+
+use DreamFactory\Core\Models\BaseServiceConfigModel;
 
 class LogstashConfig extends BaseServiceConfigModel
 {
@@ -28,6 +30,30 @@ class LogstashConfig extends BaseServiceConfigModel
             case 'port':
                 $schema['label'] = 'Port';
                 $schema['description'] = 'Port number you Logstash server is listening on for inputs.';
+                break;
+            case 'protocol':
+                $schema['type'] = 'picklist';
+                $schema['default'] = 'gelf';
+                $schema['values'] = [
+                    [
+                        'label' => 'GELF (UDP)',
+                        'name' => 'gelf'
+                    ],
+                    [
+                        'label' => 'HTTP',
+                        'name' => 'http'
+                    ],
+                    [
+                        'label' => 'TCP',
+                        'name' => 'tcp'
+                    ],
+                    [
+                        'label' => 'UDP',
+                        'name' => 'udp'
+                    ]
+                ];
+                $schema['label'] = 'Protocol/Format';
+                $schema['description'] = 'Network protocol to use for Logstash input';
                 break;
             case 'options':
                 $schema['type'] = 'object';
