@@ -4,8 +4,6 @@ namespace DreamFactory\Core\Logger\Services;
 use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Exceptions\InternalServerErrorException;
 use DreamFactory\Core\Utility\Session;
-use DreamFactory\Managed\Enums\GelfLevels;
-use DreamFactory\Managed\Support\GelfMessage;
 use Psr\Log\LoggerInterface;
 use Config;
 
@@ -30,13 +28,15 @@ abstract class BaseService extends BaseRestService
 
     abstract protected function setLogger($config);
 
+    abstract protected function getLogLevel($key);
+
     protected function handlePOST()
     {
         $level = 'INFO';
         if($this->resource !== $this->resourcePath){
             $level = strtoupper($this->resource);
         }
-        $level = GelfLevels::toValue($level);
+        $level = $this->getLogLevel($level);
         $message = str_replace($this->resource . '/', null, $this->resourcePath);
         $context = array_merge(
             ['_event' => $this->getRequestInfo()],
@@ -45,7 +45,7 @@ abstract class BaseService extends BaseRestService
 
         $result = $this->logger->log($level, $message, $context);
 
-        return $result;
+        return ['success' => $result];
     }
 
     protected function handlePUT()
