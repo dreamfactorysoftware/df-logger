@@ -18,15 +18,15 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->app->resolving('df.service', function (ServiceManager $df){
             $df->addType(
                 new ServiceType([
-                    'name'           => 'logstash',
-                    'label'          => 'logstash',
-                    'description'    => 'Logstash service.',
-                    'group'          => ServiceTypeGroups::LOG,
-                    'config_handler' => LogstashConfig::class,
-                    'default_api_doc' => function ($service) {
+                    'name'            => 'logstash',
+                    'label'           => 'logstash',
+                    'description'     => 'Logstash service.',
+                    'group'           => ServiceTypeGroups::LOG,
+                    'config_handler'  => LogstashConfig::class,
+                    'default_api_doc' => function ($service){
                         return $this->buildServiceDoc($service->id, Logstash::getApiDocInfo($service));
                     },
-                    'factory'        => function ($config){
+                    'factory'         => function ($config){
                         return new Logstash($config);
                     },
                 ])

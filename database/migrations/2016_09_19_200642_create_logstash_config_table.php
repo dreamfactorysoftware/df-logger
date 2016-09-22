@@ -21,7 +21,6 @@ class CreateLogstashConfigTable extends Migration
                 $t->string('host');
                 $t->integer('port');
                 $t->string('protocol')->default('tcp');
-                $t->mediumText('options')->nullable();
             }
         );
     }

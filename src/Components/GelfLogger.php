@@ -3,16 +3,8 @@ namespace DreamFactory\Core\Logger\Components;
 
 use Psr\Log\LoggerInterface;
 
-class GelfLogger extends NetworkLogger implements LoggerInterface
+class GelfLogger extends UdpLogger implements LoggerInterface
 {
-    /**
-     * @var string Logstash target of GELF messages
-     */
-    const DEFAULT_HOST = 'localhost';
-    /**
-     * @const integer Port that logstash listens on
-     */
-    const DEFAULT_PORT = 12202;
     /**
      * @const integer Maximum message size before splitting into chunks
      */
@@ -22,17 +14,10 @@ class GelfLogger extends NetworkLogger implements LoggerInterface
      */
     const MAX_CHUNKS_ALLOWED = 128;
 
-    const PROTOCOL = 'udp';
-
-    /** {@inheritdoc} */
-    public function __construct($host = self::DEFAULT_HOST, $port = self::DEFAULT_PORT)
-    {
-        parent::__construct($host, $port, static::PROTOCOL);
-    }
-
     /** {@inheritdoc} */
     public function log($level, $message, array $context = [])
     {
+        $level = GelfLevels::toValue($level);
         $_message = new GelfMessage($context);
         $_message->setLevel($level)->setFullMessage($message);
 
@@ -90,7 +75,7 @@ class GelfLogger extends NetworkLogger implements LoggerInterface
     /** {@inheritdoc} */
     public function send($message)
     {
-        if(!($message instanceof GelfMessage)){
+        if (!($message instanceof GelfMessage)) {
             throw new \InvalidArgumentException('Message is not a GelfMessage.');
         }
 

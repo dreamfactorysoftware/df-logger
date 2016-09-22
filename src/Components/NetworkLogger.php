@@ -1,14 +1,38 @@
 <?php
 namespace DreamFactory\Core\Logger\Components;
 
-class NetworkLogger
+use Monolog\Logger;
+
+abstract class NetworkLogger
 {
+    /**
+     * @var string Logstash target of TCP messages
+     */
+    const DEFAULT_HOST = 'localhost';
+    /**
+     * @const integer Port that logstash listens on
+     */
+    const DEFAULT_PORT = 12202;
+    /**
+     * @var string Logstash host
+     */
     protected $host;
-
+    /**
+     * @var integer Logstash port
+     */
     protected $port;
-
+    /**
+     * @var string Communication protocol
+     */
     protected $protocol;
 
+    /**
+     * NetworkLogger constructor.
+     *
+     * @param        $host
+     * @param        $port
+     * @param string $protocol
+     */
     public function __construct($host, $port, $protocol = 'udp')
     {
         $this->host = $host;
@@ -16,56 +40,82 @@ class NetworkLogger
         $this->protocol = $protocol;
     }
 
-    public function emergency($message, array $context = array())
+    /** {@inheritdoc} */
+    public function log($level, $message, array $context = [])
     {
-        // TODO: Implement emergency() method.
+        $context['_message'] = $message;
+        $context['_level'] = Logger::toMonologLevel($level);
+
+        return $this->send(json_encode($context, JSON_UNESCAPED_SLASHES));
     }
 
-    public function alert($message, array $context = array())
+    /** {@inheritdoc} */
+    public function emergency($message, array $context = [])
     {
-        // TODO: Implement alert() method.
+        $this->log(Logger::EMERGENCY, $message, $context);
     }
 
-    public function critical($message, array $context = array())
+    /** {@inheritdoc} */
+    public function alert($message, array $context = [])
     {
-        // TODO: Implement critical() method.
+        $this->log(Logger::ALERT, $message, $context);
     }
 
-    public function error($message, array $context = array())
+    /** {@inheritdoc} */
+    public function critical($message, array $context = [])
     {
-        // TODO: Implement error() method.
+        $this->log(Logger::CRITICAL, $message, $context);
     }
 
-    public function warning($message, array $context = array())
+    /** {@inheritdoc} */
+    public function error($message, array $context = [])
     {
-        // TODO: Implement warning() method.
+        $this->log(Logger::ERROR, $message, $context);
     }
 
-    public function notice($message, array $context = array())
+    /** {@inheritdoc} */
+    public function warning($message, array $context = [])
     {
-        // TODO: Implement notice() method.
+        $this->log(Logger::WARNING, $message, $context);
     }
 
-    public function debug($message, array $context = array())
+    /** {@inheritdoc} */
+    public function notice($message, array $context = [])
     {
-        // TODO: Implement debug() method.
+        $this->log(Logger::NOTICE, $message, $context);
     }
 
-    public function info($message, array $context = array())
+    /** {@inheritdoc} */
+    public function info($message, array $context = [])
     {
-        // TODO: Implement info() method.
+        $this->log(Logger::INFO, $message, $context);
     }
 
-    public function log($level, $message, array $context = array())
+    /** {@inheritdoc} */
+    public function debug($message, array $context = [])
     {
-        // TODO: Implement log() method.
+        $this->log(Logger::DEBUG, $message, $context);
     }
 
     /**
-     * @param $message mixed
+     * @param $message
+     *
+     * @return bool
      */
     public function send($message)
     {
+        try {
+            $_url = $this->protocol . '://' . $this->host . ':' . $this->port;
+            $_sock = stream_socket_client($_url);
 
+            if (!fwrite($_sock, $message)) {
+                return false;
+            }
+        } catch (\Exception $_ex) {
+            //  Failure is not an option
+            return false;
+        }
+
+        return true;
     }
 }
