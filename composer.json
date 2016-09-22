@@ -9,8 +9,8 @@
     "logger",
     "elk",
     "logstash",
-    "kibana",
-    "elasticsearch"
+    "elasticsearch",
+    "kibana"
   ],
   "homepage":    "https://www.dreamfactory.com/",
   "license":     "proprietary",
