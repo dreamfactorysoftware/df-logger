@@ -104,8 +104,11 @@ abstract class BaseService extends BaseRestService
      */
     protected function getRequestInfo()
     {
+        $request = $this->request->toArray();
+        unset($request['content_type']);
+        unset($request['content']);
         return [
-            'request'  => $this->request->toArray(),
+            'request'  => $request,
             'resource' => $this->resourcePath
         ];
     }
@@ -231,7 +234,7 @@ abstract class BaseService extends BaseRestService
                     'description'       => 'Creates one log entry.'
                 ]
             ],
-            '/' . $name . '/{urlencoded_message}'         => [
+            '/' . $name . '/{message}'         => [
                 'parameters' => [
                     [
                         'name'        => 'urlencoded_message',
@@ -302,7 +305,7 @@ abstract class BaseService extends BaseRestService
                     'description'       => 'Creates one log entry.'
                 ]
             ],
-            '/' . $name . '/{level}/{urlencoded_message}' => [
+            '/' . $name . '/{level}/{message}' => [
                 'parameters' => [
                     [
                         'name'        => 'level',
