@@ -2,6 +2,7 @@
 namespace DreamFactory\Core\Logger\Components;
 
 use Psr\Log\LoggerInterface;
+use DreamFactory\Core\Exceptions\BadRequestException;
 
 class GelfLogger extends UdpLogger implements LoggerInterface
 {
@@ -17,9 +18,13 @@ class GelfLogger extends UdpLogger implements LoggerInterface
     /** {@inheritdoc} */
     public function log($level, $message, array $context = [])
     {
-        $level = GelfLevels::toValue($level);
+        try {
+            $levelVal = GelfLevels::toValue($level);
+        } catch (\InvalidArgumentException $e){
+            throw new BadRequestException('Unknown log level [' . $level . ']');
+        }
         $_message = new GelfMessage($context);
-        $_message->setLevel($level)->setFullMessage($message);
+        $_message->setLevel($levelVal)->setFullMessage($message);
 
         return $this->send($_message);
     }
