@@ -1,6 +1,7 @@
 <?php
 namespace DreamFactory\Core\Logger\Components;
 
+use DreamFactory\Core\Exceptions\BadRequestException;
 use Monolog\Logger;
 
 abstract class NetworkLogger
@@ -43,8 +44,12 @@ abstract class NetworkLogger
     /** {@inheritdoc} */
     public function log($level, $message, array $context = [])
     {
+        $levelVal = Logger::toMonologLevel($level);
+        if(!is_int($levelVal)){
+            throw new BadRequestException('Unknown log level [' . $level . ']');
+        }
         $context['_message'] = $message;
-        $context['_level'] = Logger::toMonologLevel($level);
+        $context['_level'] = $levelVal;
 
         return $this->send(json_encode($context, JSON_UNESCAPED_SLASHES));
     }
