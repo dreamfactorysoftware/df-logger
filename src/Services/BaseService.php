@@ -26,6 +26,7 @@ abstract class BaseService extends BaseRestService
         parent::__construct($settings);
 
         $config = array_get($settings, 'config');
+        Session::replaceLookups($config, true);
 
         if (empty($config)) {
             throw new InternalServerErrorException('No service configuration found for log service.');
@@ -128,7 +129,7 @@ abstract class BaseService extends BaseRestService
         $capitalized = Inflector::camelize($service->name);
 
         $base['paths'] = [
-            '/' . $name                 => [
+            '/' . $name                                   => [
                 'post' => [
                     'tags'              => [$name],
                     'summary'           => 'create' .
@@ -230,7 +231,7 @@ abstract class BaseService extends BaseRestService
                     'description'       => 'Creates one log entry.'
                 ]
             ],
-            '/' . $name . '/{urlencoded_message}' => [
+            '/' . $name . '/{urlencoded_message}'         => [
                 'parameters' => [
                     [
                         'name'        => 'urlencoded_message',
@@ -240,7 +241,7 @@ abstract class BaseService extends BaseRestService
                         'required'    => true,
                     ],
                 ],
-                'post' => [
+                'post'       => [
                     'tags'              => [$name],
                     'summary'           => 'create' .
                         $capitalized .
@@ -270,7 +271,7 @@ abstract class BaseService extends BaseRestService
                     ],
                     'description'       => 'Creates one log entry.'
                 ],
-                'put'  => [
+                'put'        => [
                     'tags'              => [$name],
                     'summary'           => 'create' .
                         $capitalized .
@@ -318,7 +319,7 @@ abstract class BaseService extends BaseRestService
                         'required'    => true,
                     ]
                 ],
-                'post' => [
+                'post'       => [
                     'tags'              => [$name],
                     'summary'           => 'create' .
                         $capitalized .
@@ -348,7 +349,7 @@ abstract class BaseService extends BaseRestService
                     ],
                     'description'       => 'Creates one log entry.'
                 ],
-                'put'  => [
+                'put'        => [
                     'tags'              => [$name],
                     'summary'           => 'create' .
                         $capitalized .
