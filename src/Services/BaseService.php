@@ -74,12 +74,6 @@ abstract class BaseService extends BaseRestService
     }
 
     /** {@inheritdoc} */
-    protected function handleGET()
-    {
-        return false;
-    }
-
-    /** {@inheritdoc} */
     protected function handlePATCH()
     {
         return false;
