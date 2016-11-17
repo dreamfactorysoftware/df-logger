@@ -19,7 +19,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
             $df->addType(
                 new ServiceType([
                     'name'            => 'logstash',
-                    'label'           => 'logstash',
+                    'label'           => 'Logstash',
                     'description'     => 'Logstash service.',
                     'group'           => ServiceTypeGroups::LOG,
                     'config_handler'  => LogstashConfig::class,
