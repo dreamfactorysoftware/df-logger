@@ -3,6 +3,7 @@ namespace DreamFactory\Core\Logger;
 
 use DreamFactory\Core\Components\ServiceDocBuilder;
 use DreamFactory\Core\Enums\ServiceTypeGroups;
+use DreamFactory\Core\Logger\Handlers\Events\LoggingEventHandler;
 use DreamFactory\Core\Logger\Services\Logstash;
 use DreamFactory\Core\Logger\Models\LogstashConfig;
 use DreamFactory\Core\Services\ServiceManager;
@@ -32,5 +33,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                 ])
             );
         });
+
+        \Event::subscribe(new LoggingEventHandler());
     }
 }

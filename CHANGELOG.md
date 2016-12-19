@@ -4,6 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+- DF-924 Adding support for event-driven logging service.
 
 ### Changed
 
