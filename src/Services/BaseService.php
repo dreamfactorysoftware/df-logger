@@ -39,17 +39,9 @@ abstract class BaseService extends BaseRestService
         }
 
         $this->setLogger($config);
-        $contextKeys = array_get($config, 'context');
-        if (!empty($contextKeys)) {
-            foreach ($contextKeys as $k => $v) {
-                if (is_array($v)) {
-                    $contextKeys[$k] = array_get($v, 'data');
-                }
-            }
-        }
-        // Too early (request is not set yet) to set context.
+        // Too early (request object is not set yet) to set context.
         // Therefore, store the contextKeys from config for now.
-        $this->contextKeys = $contextKeys;
+        $this->contextKeys = array_get($config, 'context');;
     }
 
     /**

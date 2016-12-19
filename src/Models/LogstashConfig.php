@@ -26,15 +26,6 @@ class LogstashConfig extends BaseServiceConfigModel
     public static function getConfig($id, $protect = true)
     {
         $config = parent::getConfig($id, $protect);
-        $context = array_get($config, 'context');
-
-        foreach ($context as $k => $v) {
-            if (is_string($v)) {
-                $context[$k] = ['data' => $v];
-            }
-        }
-        $config['context'] = $context;
-
         /** @var ServiceEventMap $appRoleMaps */
         $serviceEventMaps = ServiceEventMap::whereServiceId($id)->get();
         $sems = (empty($serviceEventMaps)) ? [] : $serviceEventMaps->toArray();
@@ -59,15 +50,6 @@ class LogstashConfig extends BaseServiceConfigModel
     /** {@inheritdoc} */
     public static function setConfig($id, $config)
     {
-        $context = array_get($config, 'context');
-        if (!empty($context)) {
-            foreach ($context as $k => $v) {
-                if (is_array($v)) {
-                    $context[$k] = array_get($v, 'data');
-                }
-            }
-        }
-        $config['context'] = $context;
         if (isset($config['service_event_map'])) {
             $maps = $config['service_event_map'];
             foreach ($maps as $key => $map) {
@@ -187,87 +169,82 @@ class LogstashConfig extends BaseServiceConfigModel
                 $schema['description'] = 'Network protocol/format that Logstash input is configured for.';
                 break;
             case 'context':
-                $schema['type'] = 'array';
+                $schema['type'] = 'multi_picklist';
+                $schema['columns'] = 3;
                 $schema['label'] = 'Log Context';
                 $schema['description'] =
                     "Contextual data to capture with every log entry performed using this service.";
-                $schema['items'] = [
+                $schema['values'] = [
                     [
-                        'type'   => 'picklist',
-                        'name'   => 'data',
-                        'label'  => 'Data objects to capture',
-                        'values' => [
-                            [
-                                'label' => 'Request All',
-                                'name'  => '_event.request',
-                            ],
-                            [
-                                'label' => 'Request Content',
-                                'name'  => '_event.request.content',
-                            ],
-                            [
-                                'label' => 'Request Content-Type',
-                                'name'  => '_event.request.content_type',
-                            ],
-                            [
-                                'label' => 'Request Headers',
-                                'name'  => '_event.request.headers',
-                            ],
-                            [
-                                'label' => 'Request Parameters',
-                                'name'  => '_event.request.parameters',
-                            ],
-                            [
-                                'label' => 'Request Method (Verbs)',
-                                'name'  => '_event.request.method',
-                            ],
-                            [
-                                'label' => 'Request Payload (body)',
-                                'name'  => '_event.request.payload',
-                            ],
-                            [
-                                'label' => 'API Resource',
-                                'name'  => '_event.resource',
-                            ],
-                            [
-                                'label' => 'Response All',
-                                'name'  => '_event.response',
-                            ],
-                            [
-                                'label' => 'Response Status Code',
-                                'name'  => '_event.response.status_code',
-                            ],
-                            [
-                                'label' => 'Response Content',
-                                'name'  => '_event.response.content',
-                            ],
-                            [
-                                'label' => 'Response Content-Type',
-                                'name'  => '_event.response.content_type',
-                            ],
-                            [
-                                'label' => 'Platform All',
-                                'name'  => '_platform',
-                            ],
-                            [
-                                'label' => 'Platform Config',
-                                'name'  => '_platform.config',
-                            ],
-                            [
-                                'label' => 'Platform Session',
-                                'name'  => '_platform.session',
-                            ],
-                            [
-                                'label' => 'Platform Session User',
-                                'name'  => '_platform.session.user',
-                            ],
-                            [
-                                'label' => 'Platform Session API Key',
-                                'name'  => '_platform.session.api_key',
-                            ]
-                        ]
+                        'label' => 'Request All',
+                        'name'  => '_event.request',
+                    ],
+                    [
+                        'label' => 'Request Content',
+                        'name'  => '_event.request.content',
+                    ],
+                    [
+                        'label' => 'Request Content-Type',
+                        'name'  => '_event.request.content_type',
+                    ],
+                    [
+                        'label' => 'Request Headers',
+                        'name'  => '_event.request.headers',
+                    ],
+                    [
+                        'label' => 'Request Parameters',
+                        'name'  => '_event.request.parameters',
+                    ],
+                    [
+                        'label' => 'Request Method (Verbs)',
+                        'name'  => '_event.request.method',
+                    ],
+                    [
+                        'label' => 'Request Payload (body)',
+                        'name'  => '_event.request.payload',
+                    ],
+                    [
+                        'label' => 'API Resource',
+                        'name'  => '_event.resource',
+                    ],
+                    [
+                        'label' => 'Response All',
+                        'name'  => '_event.response',
+                    ],
+                    [
+                        'label' => 'Response Status Code',
+                        'name'  => '_event.response.status_code',
+                    ],
+                    [
+                        'label' => 'Response Content',
+                        'name'  => '_event.response.content',
+                    ],
+                    [
+                        'label' => 'Response Content-Type',
+                        'name'  => '_event.response.content_type',
+                    ],
+                    [
+                        'label' => 'Platform All',
+                        'name'  => '_platform',
+                    ],
+                    [
+                        'label' => 'Platform Config',
+                        'name'  => '_platform.config',
+                    ],
+                    [
+                        'label' => 'Platform Session',
+                        'name'  => '_platform.session',
+                    ],
+                    [
+                        'label' => 'Platform Session User',
+                        'name'  => '_platform.session.user',
+                    ],
+                    [
+                        'label' => 'Platform Session API Key',
+                        'name'  => '_platform.session.api_key',
                     ]
                 ];
+
         }
     }
 }

@@ -43,28 +43,30 @@ class LoggingEventHandler
 
             // Handle log services.
             if ($service instanceof BaseLogService) {
-                $data = json_decode($record->data, true);
-                $defaultLevel = 'INFO';
-                $defaultMessage = $eventName;
+                if ($service->isActive()) {
+                    $data = json_decode($record->data, true);
+                    $defaultLevel = 'INFO';
+                    $defaultMessage = $eventName;
 
-                if (!empty($data) && is_array($data)) {
-                    $level = strtoupper(array_get($data, 'level'));
-                    $level = (empty($level)) ? $defaultLevel : $level;
-                    $message = array_get($data, 'message');
-                    $message = (empty($message)) ? $defaultMessage : $message;
+                    if (!empty($data) && is_array($data)) {
+                        $level = strtoupper(array_get($data, 'level'));
+                        $level = (empty($level)) ? $defaultLevel : $level;
+                        $message = array_get($data, 'message');
+                        $message = (empty($message)) ? $defaultMessage : $message;
+                    }
+
+                    $eventData = $event->makeData();
+                    $allContext = [
+                        '_event'    => [
+                            'request'  => array_get($eventData, 'request'),
+                            'resource' => array_get($eventData, 'resource'),
+                            'response' => array_get($eventData, 'response')
+                        ],
+                        '_platform' => $service->getPlatformInfo()
+                    ];
+                    $service->setContextByKeys(null, $allContext);
+                    $service->log($level, $message);
                 }
-
-                $eventData = $event->makeData();
-                $allContext = [
-                    '_event'    => [
-                        'request'  => array_get($eventData, 'request'),
-                        'resource' => array_get($eventData, 'resource'),
-                        'response' => array_get($eventData, 'response')
-                    ],
-                    '_platform' => $service->getPlatformInfo()
-                ];
-                $service->setContextByKeys(null, $allContext);
-                $service->log($level, $message);
             }
         }
     }
