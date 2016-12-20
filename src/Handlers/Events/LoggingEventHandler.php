@@ -36,6 +36,12 @@ class LoggingEventHandler
     {
         $eventName = str_replace('.queued', null, $event->name);
         $records = ServiceEventMap::whereEvent($eventName)->get()->all();
+        if (empty($records)) {
+            // Look for wildcard events by service (example: user.*)
+            $serviceName = substr($eventName, 0, strpos($eventName, '.'));
+            $wildcardEvent = $serviceName . '.*';
+            $records = ServiceEventMap::whereEvent($wildcardEvent)->get()->all();
+        }
 
         foreach ($records as $record) {
             Log::debug('Service event handled: ' . $eventName);

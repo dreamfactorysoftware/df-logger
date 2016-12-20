@@ -172,6 +172,7 @@ class LogstashConfig extends BaseServiceConfigModel
                 $schema['type'] = 'multi_picklist';
                 $schema['columns'] = 3;
                 $schema['label'] = 'Log Context';
+                $schema['legend'] = 'Select data object(s) to capture';
                 $schema['description'] =
                     "Contextual data to capture with every log entry performed using this service.";
                 $schema['values'] = [
@@ -244,7 +245,6 @@ class LogstashConfig extends BaseServiceConfigModel
                         'name'  => '_platform.session.api_key',
                     ]
                 ];
-
         }
     }
 }
