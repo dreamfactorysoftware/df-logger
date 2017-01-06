@@ -70,6 +70,7 @@ class LoggingEventHandler
                         ],
                         '_platform' => $service->getPlatformInfo()
                     ];
+                    array_set($allContext, '_event.response.content_type', 'application/json');
                     $service->setContextByKeys(null, $allContext);
                     $service->log($level, $message);
                 }
