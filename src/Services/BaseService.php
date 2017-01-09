@@ -236,7 +236,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'parameters'        => [
                         [
@@ -286,7 +286,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'parameters'        => [
                         [
@@ -347,7 +347,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'responses'         => [
                         '201'     => [
@@ -377,7 +377,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'responses'         => [
                         '201'     => [
@@ -425,7 +425,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'responses'         => [
                         '201'     => [
@@ -455,7 +455,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'responses'         => [
                         '201'     => [
