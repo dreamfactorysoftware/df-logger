@@ -197,11 +197,11 @@ class LogstashConfig extends BaseServiceConfigModel
                         'name'  => '_event.request.parameters',
                     ],
                     [
-                        'label' => 'Request Method (Verbs)',
+                        'label' => 'Request Method',
                         'name'  => '_event.request.method',
                     ],
                     [
-                        'label' => 'Request Payload (body)',
+                        'label' => 'Request Payload',
                         'name'  => '_event.request.payload',
                     ],
                     [
@@ -209,19 +209,19 @@ class LogstashConfig extends BaseServiceConfigModel
                         'name'  => '_event.resource',
                     ],
                     [
-                        'label' => 'Response All',
+                        'label' => 'Response All (for events only)',
                         'name'  => '_event.response',
                     ],
                     [
-                        'label' => 'Response Status Code',
+                        'label' => 'Response Status Code (for events only)',
                         'name'  => '_event.response.status_code',
                     ],
                     [
-                        'label' => 'Response Content',
+                        'label' => 'Response Content (for events only)',
                         'name'  => '_event.response.content',
                     ],
                     [
-                        'label' => 'Response Content-Type',
+                        'label' => 'Response Content-Type (for events only)',
                         'name'  => '_event.response.content_type',
                     ],
                     [
