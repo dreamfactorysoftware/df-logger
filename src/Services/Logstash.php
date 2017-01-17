@@ -37,18 +37,18 @@ class Logstash extends BaseService
             );
         } elseif (static::UDP === $protocol) {
             $this->logger = new UdpLogger(
-                array_get($config, 'host', GelfLogger::DEFAULT_HOST),
-                array_get($config, 'port', GelfLogger::DEFAULT_PORT)
+                array_get($config, 'host', UdpLogger::DEFAULT_HOST),
+                array_get($config, 'port', UdpLogger::DEFAULT_PORT)
             );
         } elseif (static::TCP === $protocol) {
             $this->logger = new TcpLogger(
-                array_get($config, 'host', GelfLogger::DEFAULT_HOST),
-                array_get($config, 'port', GelfLogger::DEFAULT_PORT)
+                array_get($config, 'host', TcpLogger::DEFAULT_HOST),
+                array_get($config, 'port', TcpLogger::DEFAULT_PORT)
             );
         } elseif (static::HTTP === $protocol) {
             $this->logger = new HttpLogger(
-                array_get($config, 'host', GelfLogger::DEFAULT_HOST),
-                array_get($config, 'port', GelfLogger::DEFAULT_PORT)
+                array_get($config, 'host', HttpLogger::DEFAULT_HOST),
+                array_get($config, 'port', HttpLogger::DEFAULT_PORT)
             );
         } else {
             throw new InternalServerErrorException('Unknown Logstash network protocol: [' . $protocol . ']');

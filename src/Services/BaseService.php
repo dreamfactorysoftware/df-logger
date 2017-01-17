@@ -1,6 +1,7 @@
 <?php
 namespace DreamFactory\Core\Logger\Services;
 
+use DreamFactory\Core\Contracts\ServiceRequestInterface;
 use DreamFactory\Core\Exceptions\BadRequestException;
 use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Exceptions\InternalServerErrorException;
@@ -13,6 +14,11 @@ abstract class BaseService extends BaseRestService
 {
     /** @var LoggerInterface */
     protected $logger;
+
+    /** @var array  Log context */
+    protected $context = [];
+
+    protected $contextKeys = null;
 
     /**
      * BaseService constructor.
@@ -33,6 +39,9 @@ abstract class BaseService extends BaseRestService
         }
 
         $this->setLogger($config);
+        // Too early (request object is not set yet) to set context.
+        // Therefore, store the contextKeys from config for now.
+        $this->contextKeys = array_get($config, 'context');;
     }
 
     /**
@@ -41,10 +50,20 @@ abstract class BaseService extends BaseRestService
     abstract protected function setLogger($config);
 
     /**
+     * @return LoggerInterface
+     */
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+
+    /**
+     * @param array $context
+     *
      * @return array
      * @throws \DreamFactory\Core\Exceptions\BadRequestException
      */
-    protected function handlePOST()
+    protected function handlePOST(array $context = [])
     {
         $level = null;
         if ($this->resource !== $this->resourcePath) {
@@ -63,14 +82,87 @@ abstract class BaseService extends BaseRestService
             throw new BadRequestException('No message provided for logging');
         }
 
-        $context = array_merge(
-            ['_event' => $this->getRequestInfo()],
-            ['_platform' => $this->getPlatformInfo()]
-        );
-
-        $result = $this->logger->log($level, $message, $context);
+        $this->setContextByKeys();
+        $result = $this->log($level, $message, $context);
 
         return ['success' => $result];
+    }
+
+    /**
+     * Writes log.
+     *
+     * @param string $level
+     * @param string $message
+     * @param array  $context
+     */
+    public function log($level, $message, $context = [])
+    {
+        $context = array_merge($this->context, $context);
+        $result = $this->logger->log($level, $message, $context);
+
+        return $result;
+    }
+
+    /**
+     * Returns log context data.
+     *
+     * @return array
+     */
+    public function getContext()
+    {
+        return $this->context;
+    }
+
+    /**
+     * Returns default context data.
+     *
+     * @return array
+     */
+    protected function getDefaultContext()
+    {
+        $context = [
+            '_event'    => $this->getRequestInfo(),
+            '_platform' => $this->getPlatformInfo()
+        ];
+
+        return $context;
+    }
+
+    /**
+     * Sets log context data.
+     *
+     * @param array $context
+     */
+    public function setContext(array $context = [])
+    {
+        $this->context = $context;
+    }
+
+    /**
+     * Let context data by event keys (example: _event.request, _event.response, _platform.session etc.)
+     *
+     * @param null $keys
+     * @param null $allContext
+     */
+    public function setContextByKeys($keys = null, $allContext = null)
+    {
+        if (empty($keys)) {
+            $keys = $this->contextKeys;
+        }
+        $context = [];
+        if (!empty($keys)) {
+            if (is_string($keys)) {
+                $keys = explode(',', $keys);
+            }
+            if (empty($allContext)) {
+                $allContext = $this->getDefaultContext();
+            }
+            foreach ($keys as $key) {
+                array_set($context, $key, array_get($allContext, $key));
+            }
+        }
+
+        $this->context = $context;
     }
 
     /** {@inheritdoc} */
@@ -98,24 +190,32 @@ abstract class BaseService extends BaseRestService
      */
     protected function getRequestInfo()
     {
-        $request = $this->request->toArray();
-        unset($request['content_type']);
-        unset($request['content']);
-        return [
-            'request'  => $request,
-            'resource' => $this->resourcePath
-        ];
+        if ($this->request instanceof ServiceRequestInterface) {
+            $request = $this->request->toArray();
+
+            return [
+                'request'  => $request,
+                'resource' => $this->resourcePath
+            ];
+        } else {
+            return [];
+        }
     }
 
     /**
      * @return array
      */
-    protected function getPlatformInfo()
+    public function getPlatformInfo()
     {
-        return [
+        $platform = [
             'config'  => Config::get('df'),
             'session' => Session::all(),
         ];
+
+        unset($platform['session']['lookup']);
+        unset($platform['session']['lookup_secret']);
+
+        return $platform;
     }
 
     /** {@inheritdoc} */
@@ -126,7 +226,7 @@ abstract class BaseService extends BaseRestService
         $capitalized = Inflector::camelize($service->name);
 
         $base['paths'] = [
-            '/' . $name                                   => [
+            '/' . $name                        => [
                 'post' => [
                     'tags'              => [$name],
                     'summary'           => 'create' .
@@ -136,7 +236,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'parameters'        => [
                         [
@@ -186,7 +286,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'parameters'        => [
                         [
@@ -247,7 +347,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'responses'         => [
                         '201'     => [
@@ -277,7 +377,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'responses'         => [
                         '201'     => [
@@ -325,7 +425,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'responses'         => [
                         '201'     => [
@@ -355,7 +455,7 @@ abstract class BaseService extends BaseRestService
                     'x-publishedEvents' => [
                         $name . '.create'
                     ],
-                    'consumes'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'consumes'          => ['application/json', 'application/xml'],
                     'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
                     'responses'         => [
                         '201'     => [
