@@ -8,6 +8,7 @@ use DreamFactory\Core\Logger\Services\Logstash;
 use DreamFactory\Core\Logger\Models\LogstashConfig;
 use DreamFactory\Core\Services\ServiceManager;
 use DreamFactory\Core\Services\ServiceType;
+use Event;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
@@ -33,7 +34,13 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
                 ])
             );
         });
+    }
 
-        \Event::subscribe(new LoggingEventHandler());
+    public function boot()
+    {
+        // add migrations
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
+        Event::subscribe(new LoggingEventHandler());
     }
 }
