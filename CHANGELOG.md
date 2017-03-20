@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 ### Changed
 ### Fixed
+- DF-1035 Fixed the port field in service config GUI
 
 ## [0.5.0] - 2017-03-03
 - Major restructuring to upgrade to Laravel 5.4 and be more dynamically available

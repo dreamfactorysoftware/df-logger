@@ -19,6 +19,7 @@ class LogstashConfig extends BaseServiceConfigModel
     /** @var array */
     protected $casts = [
         'service_id' => 'integer',
+        'port'       => 'integer',
         'context'    => 'array'
     ];
 
