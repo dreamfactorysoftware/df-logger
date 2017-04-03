@@ -8,7 +8,11 @@ use DreamFactory\Core\Models\ServiceEventMap;
 
 class LogstashConfig extends BaseServiceConfigModel
 {
-    use ServiceEventMapper;
+    use ServiceEventMapper {
+        getConfig as getConfigMap;
+        setConfig as setConfigMap;
+        storeConfig as storeConfigMap;
+    }
 
     /** @var string */
     protected $table = 'logstash_config';
@@ -23,49 +27,63 @@ class LogstashConfig extends BaseServiceConfigModel
         'context'    => 'array'
     ];
 
-    /** {@inheritdoc} */
-    public static function getConfig($id, $protect = true)
+    protected static function formatMaps(&$maps, $incoming = true)
     {
-        $config = parent::getConfig($id, $protect);
-        /** @var ServiceEventMap $appRoleMaps */
-        $serviceEventMaps = ServiceEventMap::whereServiceId($id)->get();
-        $sems = (empty($serviceEventMaps)) ? [] : $serviceEventMaps->toArray();
-
-        foreach ($sems as $key => $sem) {
-            $data = json_decode($sem['data'], true);
-            if (!empty($data)) {
-                $sems[$key]['level'] = strtoupper(array_get($data, 'level'));
-                $sems[$key]['message'] = array_get($data, 'message');
-            } else {
-                $sems[$key]['level'] = null;
-                $sems[$key]['message'] = null;
+        if ($incoming) {
+            foreach ($maps as $key => &$map) {
+                $map['data'] = json_encode([
+                    'level'   => array_get($map, 'level'),
+                    'message' => array_get($map, 'message')
+                ]);
+                unset($map['level'], $map['message']);
             }
-            unset($sems[$key]['data']);
+        } else {
+            foreach ($maps as $key => &$map) {
+                $data = json_decode($map['data'], true);
+                $level = array_get($data, 'level');
+                $map['level'] = ($level ? strtoupper($level) : null);
+                $map['message'] = array_get($data, 'message');
+                unset($map['data']);
+            }
         }
+    }
 
-        $config['service_event_map'] = $sems;
+    /** {@inheritdoc} */
+    public static function getConfig($id, $local_config = null, $protect = true)
+    {
+        $config = static::getConfigMap($id, $local_config, $protect);
+
+        $maps = (array)array_get($config, 'service_event_map');
+        static::formatMaps($maps, false);
+        $config['service_event_map'] = $maps;
 
         return $config;
     }
 
     /** {@inheritdoc} */
-    public static function setConfig($id, $config)
+    public static function setConfig($id, $config, $local_config = null)
     {
         if (isset($config['service_event_map'])) {
             $maps = $config['service_event_map'];
-            foreach ($maps as $key => $map) {
-                $maps[$key]['data'] =
-                    json_encode(['level' => array_get($map, 'level'), 'message' => array_get($map, 'message')]);
-                unset($maps[$key]['level']);
-                unset($maps[$key]['message']);
-            }
             if (!is_array($maps)) {
                 throw new BadRequestException('Service to Event map must be an array.');
             }
-            ServiceEventMap::setConfig($id, $maps);
+            static::formatMaps($maps, true);
+            $config['service_event_map'] = $maps;
         }
 
-        parent::setConfig($id, $config);
+        return static::setConfigMap($id, $config, $local_config);
+    }
+
+    public static function storeConfig($id, $config)
+    {
+        if (isset($config['service_event_map'])) {
+            $maps = (array)$config['service_event_map'];
+            static::formatMaps($maps, true);
+            $config['service_event_map'] = $maps;
+        }
+
+        return static::storeConfigMap($id, $config);
     }
 
     /** {@inheritdoc} */
@@ -73,57 +91,62 @@ class LogstashConfig extends BaseServiceConfigModel
     {
         $schema = parent::getConfigSchema();
         $sem = ServiceEventMap::getConfigSchema();
-        $sem['items'] = [
-            $sem['items'][0],
-            [
-                'type'       => 'picklist',
-                'name'       => 'level',
-                'label'      => 'Log Level',
-                'allow_null' => false,
-                'default'    => 'INFO',
-                'values'     => [
-                    [
-                        'label' => 'EMERGENCY',
-                        'name'  => 'EMERGENCY'
-                    ],
-                    [
-                        'label' => 'ALERT',
-                        'name'  => 'ALERT'
-                    ],
-                    [
-                        'label' => 'CRITICAL',
-                        'name'  => 'CRITICAL'
-                    ],
-                    [
-                        'label' => 'ERROR',
-                        'name'  => 'ERROR'
-                    ],
-                    [
-                        'label' => 'WARNING',
-                        'name'  => 'WARNING'
-                    ],
-                    [
-                        'label' => 'NOTICE',
-                        'name'  => 'NOTICE'
-                    ],
-                    [
-                        'label' => 'INFO',
-                        'name'  => 'INFO'
-                    ],
-                    [
-                        'label' => 'DEBUG',
-                        'name'  => 'DEBUG'
-                    ]
+        $sem[1] = [
+            'type'       => 'picklist',
+            'name'       => 'level',
+            'label'      => 'Log Level',
+            'allow_null' => false,
+            'default'    => 'INFO',
+            'values'     => [
+                [
+                    'label' => 'EMERGENCY',
+                    'name'  => 'EMERGENCY'
+                ],
+                [
+                    'label' => 'ALERT',
+                    'name'  => 'ALERT'
+                ],
+                [
+                    'label' => 'CRITICAL',
+                    'name'  => 'CRITICAL'
+                ],
+                [
+                    'label' => 'ERROR',
+                    'name'  => 'ERROR'
+                ],
+                [
+                    'label' => 'WARNING',
+                    'name'  => 'WARNING'
+                ],
+                [
+                    'label' => 'NOTICE',
+                    'name'  => 'NOTICE'
+                ],
+                [
+                    'label' => 'INFO',
+                    'name'  => 'INFO'
+                ],
+                [
+                    'label' => 'DEBUG',
+                    'name'  => 'DEBUG'
                 ]
-            ],
-            [
-                'type'  => 'text',
-                'name'  => 'message',
-                'label' => 'Message'
             ]
         ];
+        $sem[] = [
+            'type'  => 'text',
+            'name'  => 'message',
+            'label' => 'Message'
+        ];
 
-        $schema[] = $sem;
+        $schema[] = [
+            'name'        => 'service_event_map',
+            'label'       => 'Service Event',
+            'description' => 'Select event(s) when you would like this service to fire!',
+            'type'        => 'array',
+            'required'    => false,
+            'allow_null'  => true,
+            'items'       => $sem,
+        ];
 
         return $schema;
     }
