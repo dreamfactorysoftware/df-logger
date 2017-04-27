@@ -1,7 +1,7 @@
 <?php
 namespace DreamFactory\Core\Logger\Components;
 
-use DreamFactory\Library\Utility\Curl;
+use DreamFactory\Core\Utility\Curl;
 use Psr\Log\LoggerInterface;
 
 class HttpLogger extends NetworkLogger implements LoggerInterface

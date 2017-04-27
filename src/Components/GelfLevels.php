@@ -1,7 +1,7 @@
 <?php
 namespace DreamFactory\Core\Logger\Components;
 
-use DreamFactory\Library\Utility\Enums\FactoryEnum;
+use DreamFactory\Core\Enums\FactoryEnum;
 
 /**
  * The "level" of a GELF message.
