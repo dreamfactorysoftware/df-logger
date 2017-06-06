@@ -4,6 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.0] - 2017-06-05
+### Changed
+- Cleanup - removal of php-utils dependency
+
 ## [0.6.0] - 2017-04-21
 ### Fixed
 - DF-1035 Fixed the port field in service config GUI
@@ -30,7 +34,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.1.0 - 2016-09-22
 First official release of this library.
 
-[Unreleased]: https://github.com/dreamfactorysoftware/df-logger/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/dreamfactorysoftware/df-logger/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/dreamfactorysoftware/df-logger/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/dreamfactorysoftware/df-logger/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/dreamfactorysoftware/df-logger/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/dreamfactorysoftware/df-logger/compare/0.3.0...0.4.0
