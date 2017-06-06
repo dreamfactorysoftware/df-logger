@@ -6,7 +6,6 @@ use DreamFactory\Core\Exceptions\BadRequestException;
 use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Exceptions\InternalServerErrorException;
 use DreamFactory\Core\Utility\Session;
-use DreamFactory\Library\Utility\Inflector;
 use Psr\Log\LoggerInterface;
 use Config;
 
@@ -223,7 +222,7 @@ abstract class BaseService extends BaseRestService
     {
         $base = parent::getApiDocInfo($service);
         $name = strtolower($service->name);
-        $capitalized = Inflector::camelize($service->name);
+        $capitalized = camelize($service->name);
 
         $base['paths'] = [
             '/' . $name                        => [

@@ -141,7 +141,7 @@ class LogstashConfig extends BaseServiceConfigModel
         $schema[] = [
             'name'        => 'service_event_map',
             'label'       => 'Service Event',
-            'description' => 'Select event(s) when you would like this service to fire!',
+            'description' => 'Select event(s) to be logged.',
             'type'        => 'array',
             'required'    => false,
             'allow_null'  => true,
