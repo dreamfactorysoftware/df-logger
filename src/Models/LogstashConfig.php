@@ -1,4 +1,5 @@
 <?php
+
 namespace DreamFactory\Core\Logger\Models;
 
 use DreamFactory\Core\Exceptions\BadRequestException;
@@ -227,6 +228,18 @@ class LogstashConfig extends BaseServiceConfigModel
                     [
                         'label' => 'Request Payload',
                         'name'  => '_event.request.payload',
+                    ],
+                    [
+                        'label' => 'Request URI',
+                        'name'  => '_event.request.uri',
+                    ],
+                    [
+                        'label' => 'Request Service',
+                        'name'  => '_event.request.service',
+                    ],
+                    [
+                        'label' => 'Request Resource',
+                        'name'  => '_event.request.resource',
                     ],
                     [
                         'label' => 'API Resource',
