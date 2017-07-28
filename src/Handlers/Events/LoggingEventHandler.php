@@ -2,7 +2,7 @@
 namespace DreamFactory\Core\Logger\Handlers\Events;
 
 use Illuminate\Contracts\Events\Dispatcher;
-use DreamFactory\Core\Events\ServiceEvent;
+use DreamFactory\Core\Events\ServiceAssignedEvent;
 use DreamFactory\Core\Logger\Services\BaseService as BaseLogService;
 use Log;
 
@@ -17,14 +17,14 @@ class LoggingEventHandler
     {
         $events->listen(
             [
-                ServiceEvent::class,
+                ServiceAssignedEvent::class,
             ],
             static::class . '@handleSubEvent'
         );
     }
 
     /**
-     * @param ServiceEvent $event
+     * @param ServiceAssignedEvent $event
      */
     public function handleSubEvent($event)
     {
