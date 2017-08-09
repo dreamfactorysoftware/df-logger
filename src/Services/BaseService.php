@@ -3,8 +3,8 @@ namespace DreamFactory\Core\Logger\Services;
 
 use DreamFactory\Core\Contracts\ServiceRequestInterface;
 use DreamFactory\Core\Exceptions\BadRequestException;
-use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Exceptions\InternalServerErrorException;
+use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Utility\Session;
 use Psr\Log\LoggerInterface;
 use Config;
@@ -30,17 +30,14 @@ abstract class BaseService extends BaseRestService
     {
         parent::__construct($settings);
 
-        $config = array_get($settings, 'config');
-        Session::replaceLookups($config, true);
-
-        if (empty($config)) {
+        if (empty($this->config)) {
             throw new InternalServerErrorException('No service configuration found for log service.');
         }
 
-        $this->setLogger($config);
+        $this->setLogger($this->config);
         // Too early (request object is not set yet) to set context.
         // Therefore, store the contextKeys from config for now.
-        $this->contextKeys = array_get($config, 'context');;
+        $this->contextKeys = array_get($this->config, 'context');;
     }
 
     /**
@@ -85,6 +82,14 @@ abstract class BaseService extends BaseRestService
         $result = $this->log($level, $message, $context);
 
         return ['success' => $result];
+    }
+
+    /**
+     * @return array
+     */
+    protected function handlePUT()
+    {
+        return $this->handlePOST();
     }
 
     /**
@@ -164,26 +169,6 @@ abstract class BaseService extends BaseRestService
         $this->context = $context;
     }
 
-    /** {@inheritdoc} */
-    protected function handlePATCH()
-    {
-        return false;
-    }
-
-    /** {@inheritdoc} */
-    protected function handleDELETE()
-    {
-        return false;
-    }
-
-    /**
-     * @return array
-     */
-    protected function handlePUT()
-    {
-        return $this->handlePOST();
-    }
-
     /**
      * @return array
      */
@@ -228,15 +213,10 @@ abstract class BaseService extends BaseRestService
             '/' . $name                        => [
                 'post' => [
                     'tags'              => [$name],
-                    'summary'           => 'create' .
-                        $capitalized .
-                        'Entries() - Create one log entry',
-                    'operationId'       => 'create' . $capitalized . 'Entries',
-                    'x-publishedEvents' => [
-                        $name . '.create'
-                    ],
+                    'summary'           => 'create' . $capitalized . 'Entry() - Create one log entry',
+                    'operationId'       => 'create' . $capitalized . 'Entry',
                     'consumes'          => ['application/json', 'application/xml'],
-                    'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'produces'          => ['application/json', 'application/xml'],
                     'parameters'        => [
                         [
                             'name'        => 'body',
@@ -276,61 +256,11 @@ abstract class BaseService extends BaseRestService
                     ],
                     'description'       => 'Creates one log entry.'
                 ],
-                'put'  => [
-                    'tags'              => [$name],
-                    'summary'           => 'create' .
-                        $capitalized .
-                        'Entries() - Create one log entry',
-                    'operationId'       => 'create' . $capitalized . 'Entries',
-                    'x-publishedEvents' => [
-                        $name . '.create'
-                    ],
-                    'consumes'          => ['application/json', 'application/xml'],
-                    'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
-                    'parameters'        => [
-                        [
-                            'name'        => 'body',
-                            'description' => 'Content - Log level and message.',
-                            'schema'      => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'level'   => [
-                                        'type'        => 'string',
-                                        'description' => 'Valid levels: emergency, alert, critical, error, warning, notice, info, debug'
-                                    ],
-                                    'message' => [
-                                        'type'        => 'string',
-                                        'description' => 'Your log message goes here'
-                                    ]
-                                ]
-                            ],
-                            'in'          => 'body',
-                        ]
-                    ],
-                    'responses'         => [
-                        '201'     => [
-                            'description' => 'Success',
-                            'schema'      => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'success' => [
-                                        'type' => 'boolean'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'default' => [
-                            'description' => 'Error',
-                            'schema'      => ['$ref' => '#/definitions/Error']
-                        ]
-                    ],
-                    'description'       => 'Creates one log entry.'
-                ]
             ],
             '/' . $name . '/{message}'         => [
                 'parameters' => [
                     [
-                        'name'        => 'urlencoded_message',
+                        'name'        => 'message',
                         'description' => 'URL encoded log message.',
                         'type'        => 'string',
                         'in'          => 'path',
@@ -339,15 +269,10 @@ abstract class BaseService extends BaseRestService
                 ],
                 'post'       => [
                     'tags'              => [$name],
-                    'summary'           => 'create' .
-                        $capitalized .
-                        'Entries() - Create one log entry',
-                    'operationId'       => 'create' . $capitalized . 'Entries',
-                    'x-publishedEvents' => [
-                        $name . '.create'
-                    ],
+                    'summary'           => 'create' . $capitalized . 'EntryMessage() - Create one log entry',
+                    'operationId'       => 'create' . $capitalized . 'EntryMessage',
                     'consumes'          => ['application/json', 'application/xml'],
-                    'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'produces'          => ['application/json', 'application/xml'],
                     'responses'         => [
                         '201'     => [
                             'description' => 'Success',
@@ -367,36 +292,6 @@ abstract class BaseService extends BaseRestService
                     ],
                     'description'       => 'Creates one log entry.'
                 ],
-                'put'        => [
-                    'tags'              => [$name],
-                    'summary'           => 'create' .
-                        $capitalized .
-                        'Entries() - Create one log entry',
-                    'operationId'       => 'create' . $capitalized . 'Entries',
-                    'x-publishedEvents' => [
-                        $name . '.create'
-                    ],
-                    'consumes'          => ['application/json', 'application/xml'],
-                    'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
-                    'responses'         => [
-                        '201'     => [
-                            'description' => 'Success',
-                            'schema'      => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'success' => [
-                                        'type' => 'boolean'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'default' => [
-                            'description' => 'Error',
-                            'schema'      => ['$ref' => '#/definitions/Error']
-                        ]
-                    ],
-                    'description'       => 'Creates one log entry.'
-                ]
             ],
             '/' . $name . '/{level}/{message}' => [
                 'parameters' => [
@@ -408,7 +303,7 @@ abstract class BaseService extends BaseRestService
                         'required'    => true,
                     ],
                     [
-                        'name'        => 'urlencoded_message',
+                        'name'        => 'message',
                         'description' => 'URL encoded log message.',
                         'type'        => 'string',
                         'in'          => 'path',
@@ -417,15 +312,10 @@ abstract class BaseService extends BaseRestService
                 ],
                 'post'       => [
                     'tags'              => [$name],
-                    'summary'           => 'create' .
-                        $capitalized .
-                        'Entries() - Create one log entry',
-                    'operationId'       => 'create' . $capitalized . 'Entries',
-                    'x-publishedEvents' => [
-                        $name . '.create'
-                    ],
+                    'summary'           => 'create' . $capitalized . 'EntryByLevel() - Create one log entry for a specific log level',
+                    'operationId'       => 'create' . $capitalized . 'EntryByLevel',
                     'consumes'          => ['application/json', 'application/xml'],
-                    'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
+                    'produces'          => ['application/json', 'application/xml'],
                     'responses'         => [
                         '201'     => [
                             'description' => 'Success',
@@ -445,36 +335,6 @@ abstract class BaseService extends BaseRestService
                     ],
                     'description'       => 'Creates one log entry.'
                 ],
-                'put'        => [
-                    'tags'              => [$name],
-                    'summary'           => 'create' .
-                        $capitalized .
-                        'Entries() - Create one log entry',
-                    'operationId'       => 'create' . $capitalized . 'Entries',
-                    'x-publishedEvents' => [
-                        $name . '.create'
-                    ],
-                    'consumes'          => ['application/json', 'application/xml'],
-                    'produces'          => ['application/json', 'application/xml', 'text/csv', 'text/plain'],
-                    'responses'         => [
-                        '201'     => [
-                            'description' => 'Success',
-                            'schema'      => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'success' => [
-                                        'type' => 'boolean'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'default' => [
-                            'description' => 'Error',
-                            'schema'      => ['$ref' => '#/definitions/Error']
-                        ]
-                    ],
-                    'description'       => 'Creates one log entry.'
-                ]
             ],
         ];
 
