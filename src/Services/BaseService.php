@@ -211,28 +211,32 @@ abstract class BaseService extends BaseRestService
         $base = [
             '/'                  => [
                 'post' => [
-                    'summary'     => 'create' . $capitalized . 'Entry() - Create one log entry',
+                    'summary'     => 'Create one log entry',
+                    'description' => 'Creates one log entry.',
                     'operationId' => 'create' . $capitalized . 'Entry',
                     'requestBody' => [
                         'description' => 'Content - Log level and message.',
-                        'schema'      => [
-                            'type'       => 'object',
-                            'properties' => [
-                                'level'   => [
-                                    'type'        => 'string',
-                                    'description' => 'Valid levels: emergency, alert, critical, error, warning, notice, info, debug'
+                        'content'     => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type'       => 'object',
+                                    'properties' => [
+                                        'level'   => [
+                                            'type'        => 'string',
+                                            'description' => 'Valid levels: emergency, alert, critical, error, warning, notice, info, debug'
+                                        ],
+                                        'message' => [
+                                            'type'        => 'string',
+                                            'description' => 'Your log message goes here'
+                                        ],
+                                    ],
                                 ],
-                                'message' => [
-                                    'type'        => 'string',
-                                    'description' => 'Your log message goes here'
-                                ]
-                            ]
+                            ],
                         ],
                     ],
                     'responses'   => [
                         '201' => ['$ref' => '#/components/responses/Success']
                     ],
-                    'description' => 'Creates one log entry.'
                 ],
             ],
             '/{message}'         => [
@@ -246,12 +250,12 @@ abstract class BaseService extends BaseRestService
                     ],
                 ],
                 'post'       => [
-                    'summary'     => 'create' . $capitalized . 'EntryMessage() - Create one log entry',
+                    'summary'     => 'Create one log entry',
+                    'description' => 'Creates one log entry.',
                     'operationId' => 'create' . $capitalized . 'EntryMessage',
                     'responses'   => [
                         '201' => ['$ref' => '#/components/responses/Success']
                     ],
-                    'description' => 'Creates one log entry.'
                 ],
             ],
             '/{level}/{message}' => [
@@ -272,12 +276,12 @@ abstract class BaseService extends BaseRestService
                     ]
                 ],
                 'post'       => [
-                    'summary'     => 'create' . $capitalized . 'EntryByLevel() - Create one log entry for a specific log level',
+                    'summary'     => 'Create one log entry for a specific log level',
+                    'description' => 'Creates one log entry.',
                     'operationId' => 'create' . $capitalized . 'EntryByLevel',
                     'responses'   => [
                         '201' => ['$ref' => '#/components/responses/Success']
                     ],
-                    'description' => 'Creates one log entry.'
                 ],
             ],
         ];
