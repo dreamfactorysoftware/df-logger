@@ -1,4 +1,5 @@
 <?php
+
 namespace DreamFactory\Core\Logger\Services;
 
 use DreamFactory\Core\Contracts\ServiceRequestInterface;
@@ -203,61 +204,42 @@ abstract class BaseService extends BaseRestService
     }
 
     /** {@inheritdoc} */
-    public static function getApiDocInfo($service)
+    protected function getApiDocPaths()
     {
-        $base = parent::getApiDocInfo($service);
-        $name = strtolower($service->name);
-        $capitalized = camelize($service->name);
+        $capitalized = camelize($this->name);
 
-        $base['paths'] = [
-            '/' . $name                        => [
+        $base = [
+            '/'                  => [
                 'post' => [
-                    'tags'              => [$name],
-                    'summary'           => 'create' . $capitalized . 'Entry() - Create one log entry',
-                    'operationId'       => 'create' . $capitalized . 'Entry',
-                    'consumes'          => ['application/json', 'application/xml'],
-                    'produces'          => ['application/json', 'application/xml'],
-                    'parameters'        => [
-                        [
-                            'name'        => 'body',
-                            'description' => 'Content - Log level and message.',
-                            'schema'      => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'level'   => [
-                                        'type'        => 'string',
-                                        'description' => 'Valid levels: emergency, alert, critical, error, warning, notice, info, debug'
+                    'summary'     => 'Create one log entry',
+                    'description' => 'Creates one log entry.',
+                    'operationId' => 'create' . $capitalized . 'Entry',
+                    'requestBody' => [
+                        'description' => 'Content - Log level and message.',
+                        'content'     => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type'       => 'object',
+                                    'properties' => [
+                                        'level'   => [
+                                            'type'        => 'string',
+                                            'description' => 'Valid levels: emergency, alert, critical, error, warning, notice, info, debug'
+                                        ],
+                                        'message' => [
+                                            'type'        => 'string',
+                                            'description' => 'Your log message goes here'
+                                        ],
                                     ],
-                                    'message' => [
-                                        'type'        => 'string',
-                                        'description' => 'Your log message goes here'
-                                    ]
-                                ]
+                                ],
                             ],
-                            'in'          => 'body',
-                        ]
-                    ],
-                    'responses'         => [
-                        '201'     => [
-                            'description' => 'Success',
-                            'schema'      => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'success' => [
-                                        'type' => 'boolean'
-                                    ]
-                                ]
-                            ]
                         ],
-                        'default' => [
-                            'description' => 'Error',
-                            'schema'      => ['$ref' => '#/definitions/Error']
-                        ]
                     ],
-                    'description'       => 'Creates one log entry.'
+                    'responses'   => [
+                        '201' => ['$ref' => '#/components/responses/Success']
+                    ],
                 ],
             ],
-            '/' . $name . '/{message}'         => [
+            '/{message}'         => [
                 'parameters' => [
                     [
                         'name'        => 'message',
@@ -268,32 +250,15 @@ abstract class BaseService extends BaseRestService
                     ],
                 ],
                 'post'       => [
-                    'tags'              => [$name],
-                    'summary'           => 'create' . $capitalized . 'EntryMessage() - Create one log entry',
-                    'operationId'       => 'create' . $capitalized . 'EntryMessage',
-                    'consumes'          => ['application/json', 'application/xml'],
-                    'produces'          => ['application/json', 'application/xml'],
-                    'responses'         => [
-                        '201'     => [
-                            'description' => 'Success',
-                            'schema'      => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'success' => [
-                                        'type' => 'boolean'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'default' => [
-                            'description' => 'Error',
-                            'schema'      => ['$ref' => '#/definitions/Error']
-                        ]
+                    'summary'     => 'Create one log entry',
+                    'description' => 'Creates one log entry.',
+                    'operationId' => 'create' . $capitalized . 'EntryMessage',
+                    'responses'   => [
+                        '201' => ['$ref' => '#/components/responses/Success']
                     ],
-                    'description'       => 'Creates one log entry.'
                 ],
             ],
-            '/' . $name . '/{level}/{message}' => [
+            '/{level}/{message}' => [
                 'parameters' => [
                     [
                         'name'        => 'level',
@@ -311,29 +276,12 @@ abstract class BaseService extends BaseRestService
                     ]
                 ],
                 'post'       => [
-                    'tags'              => [$name],
-                    'summary'           => 'create' . $capitalized . 'EntryByLevel() - Create one log entry for a specific log level',
-                    'operationId'       => 'create' . $capitalized . 'EntryByLevel',
-                    'consumes'          => ['application/json', 'application/xml'],
-                    'produces'          => ['application/json', 'application/xml'],
-                    'responses'         => [
-                        '201'     => [
-                            'description' => 'Success',
-                            'schema'      => [
-                                'type'       => 'object',
-                                'properties' => [
-                                    'success' => [
-                                        'type' => 'boolean'
-                                    ]
-                                ]
-                            ]
-                        ],
-                        'default' => [
-                            'description' => 'Error',
-                            'schema'      => ['$ref' => '#/definitions/Error']
-                        ]
+                    'summary'     => 'Create one log entry for a specific log level',
+                    'description' => 'Creates one log entry.',
+                    'operationId' => 'create' . $capitalized . 'EntryByLevel',
+                    'responses'   => [
+                        '201' => ['$ref' => '#/components/responses/Success']
                     ],
-                    'description'       => 'Creates one log entry.'
                 ],
             ],
         ];

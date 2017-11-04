@@ -1,6 +1,8 @@
 <?php
+
 namespace DreamFactory\Core\Logger;
 
+use DreamFactory\Core\Enums\LicenseLevel;
 use DreamFactory\Core\Enums\ServiceTypeGroups;
 use DreamFactory\Core\Logger\Handlers\Events\LoggingEventHandler;
 use DreamFactory\Core\Logger\Services\Logstash;
@@ -14,15 +16,16 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     public function register()
     {
         // Add our service types.
-        $this->app->resolving('df.service', function (ServiceManager $df){
+        $this->app->resolving('df.service', function (ServiceManager $df) {
             $df->addType(
                 new ServiceType([
-                    'name'            => 'logstash',
-                    'label'           => 'Logstash',
-                    'description'     => 'Logstash service.',
-                    'group'           => ServiceTypeGroups::LOG,
-                    'config_handler'  => LogstashConfig::class,
-                    'factory'         => function ($config){
+                    'name'                  => 'logstash',
+                    'label'                 => 'Logstash',
+                    'description'           => 'Logstash service.',
+                    'group'                 => ServiceTypeGroups::LOG,
+                    'subscription_required' => LicenseLevel::GOLD,
+                    'config_handler'        => LogstashConfig::class,
+                    'factory'               => function ($config) {
                         return new Logstash($config);
                     },
                 ])
