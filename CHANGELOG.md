@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+## [0.11.0] - 2017-12-28
+### Added
+- Added package discovery
 
 ## [0.10.0] - 2017-11-03
 ### Changed
@@ -49,7 +52,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.1.0 - 2016-09-22
 First official release of this library.
 
-[Unreleased]: https://github.com/dreamfactorysoftware/df-logger/compare/0.10.0...HEAD
+[Unreleased]: https://github.com/dreamfactorysoftware/df-logger/compare/0.11.0...HEAD
+[0.11.0]: https://github.com/dreamfactorysoftware/df-logger/compare/0.10.0...0.11.0
 [0.10.0]: https://github.com/dreamfactorysoftware/df-logger/compare/0.9.0...0.10.0
 [0.9.0]: https://github.com/dreamfactorysoftware/df-logger/compare/0.8.0...0.9.0
 [0.8.0]: https://github.com/dreamfactorysoftware/df-logger/compare/0.7.0...0.8.0
