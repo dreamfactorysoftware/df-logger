@@ -33,7 +33,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require":     {
-    "dreamfactory/df-core": "~0.22"
+    "dreamfactory/df-core": "~0.24"
   },
   "autoload":    {
     "psr-4": {
