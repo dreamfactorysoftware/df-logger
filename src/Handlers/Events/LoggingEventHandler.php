@@ -28,34 +28,38 @@ class LoggingEventHandler
      */
     public function handleSubEvent($event)
     {
-        $service = $event->getService();
-        if ($service instanceof BaseLogService) {
-            if ($service->isActive()) {
-                $record = $event->getData();
-                $data = json_decode(array_get($record, 'data'), true);
-                $defaultLevel = 'INFO';
-                $defaultMessage = $event->name;
+        // When a service is called, it fires two events, and we only want one for outputting to logstash. so if the event
+        // is a call to a generic endpoint, we will stop it.
+        if (!preg_match('[{table_name}|{procedure_name}|{function_name}]', $event->name)) {
+            $service = $event->getService();
+            if ($service instanceof BaseLogService) {
+                if ($service->isActive()) {
+                    $record = $event->getData();
+                    $data = json_decode(array_get($record, 'data'), true);
+                    $defaultLevel = 'INFO';
+                    $defaultMessage = $event->name;
 
-                if (!empty($data) && is_array($data)) {
-                    $level = strtoupper(array_get($data, 'level'));
-                    $level = (empty($level)) ? $defaultLevel : $level;
-                    $message = array_get($data, 'message');
-                    $message = (empty($message)) ? $defaultMessage : $message;
+                    if (!empty($data) && is_array($data)) {
+                        $level = strtoupper(array_get($data, 'level'));
+                        $level = (empty($level)) ? $defaultLevel : $level;
+                        $message = array_get($data, 'message');
+                        $message = (empty($message)) ? $defaultMessage : $message;
+                    }
+
+                    $eventData = $event->makeData();
+                    $allContext = [
+                        '_event'    => [
+                            'request'  => array_get($eventData, 'request'),
+                            'resource' => array_get($eventData, 'resource'),
+                            'response' => array_get($eventData, 'response')
+                        ],
+                        '_platform' => $service->getPlatformInfo()
+                    ];
+                    array_set($allContext, '_event.response.content_type', 'application/json');
+                    $service->setContextByKeys(null, $allContext);
+                    $service->log($level, $message);
+                    Log::debug('Logged message on [' . $event->name . '] event.');
                 }
-
-                $eventData = $event->makeData();
-                $allContext = [
-                    '_event'    => [
-                        'request'  => array_get($eventData, 'request'),
-                        'resource' => array_get($eventData, 'resource'),
-                        'response' => array_get($eventData, 'response')
-                    ],
-                    '_platform' => $service->getPlatformInfo()
-                ];
-                array_set($allContext, '_event.response.content_type', 'application/json');
-                $service->setContextByKeys(null, $allContext);
-                $service->log($level, $message);
-                Log::debug('Logged message on [' . $event->name . '] event.');
             }
         }
     }
