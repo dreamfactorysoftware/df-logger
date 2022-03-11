@@ -28,9 +28,6 @@ class LoggingEventHandler
      */
     public function handleSubEvent($event)
     {
-        // When a service is called, it fires two events, and we only want one for outputting to logstash. so if the event
-        // is a call to a generic endpoint, we will stop it.
-        if (!preg_match('[{table_name}|{procedure_name}|{function_name}]', $event->name)) {
             $service = $event->getService();
             if ($service instanceof BaseLogService) {
                 if ($service->isActive()) {
@@ -61,6 +58,5 @@ class LoggingEventHandler
                     Log::debug('Logged message on [' . $event->name . '] event.');
                 }
             }
-        }
     }
 }
