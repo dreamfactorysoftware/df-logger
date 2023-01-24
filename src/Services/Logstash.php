@@ -6,6 +6,7 @@ use DreamFactory\Core\Logger\Components\GelfLogger;
 use DreamFactory\Core\Logger\Components\HttpLogger;
 use DreamFactory\Core\Logger\Components\TcpLogger;
 use DreamFactory\Core\Logger\Components\UdpLogger;
+use Arr;
 
 class Logstash extends BaseService
 {
@@ -28,27 +29,27 @@ class Logstash extends BaseService
      */
     protected function setLogger($config)
     {
-        $protocol = array_get($config, 'protocol');
+        $protocol = Arr::get($config, 'protocol');
 
         if (static::GELF === $protocol) {
             $this->logger = new GelfLogger(
-                array_get($config, 'host', GelfLogger::DEFAULT_HOST),
-                array_get($config, 'port', GelfLogger::DEFAULT_PORT)
+                Arr::get($config, 'host', GelfLogger::DEFAULT_HOST),
+                Arr::get($config, 'port', GelfLogger::DEFAULT_PORT)
             );
         } elseif (static::UDP === $protocol) {
             $this->logger = new UdpLogger(
-                array_get($config, 'host', UdpLogger::DEFAULT_HOST),
-                array_get($config, 'port', UdpLogger::DEFAULT_PORT)
+                Arr::get($config, 'host', UdpLogger::DEFAULT_HOST),
+                Arr::get($config, 'port', UdpLogger::DEFAULT_PORT)
             );
         } elseif (static::TCP === $protocol) {
             $this->logger = new TcpLogger(
-                array_get($config, 'host', TcpLogger::DEFAULT_HOST),
-                array_get($config, 'port', TcpLogger::DEFAULT_PORT)
+                Arr::get($config, 'host', TcpLogger::DEFAULT_HOST),
+                Arr::get($config, 'port', TcpLogger::DEFAULT_PORT)
             );
         } elseif (static::HTTP === $protocol) {
             $this->logger = new HttpLogger(
-                array_get($config, 'host', HttpLogger::DEFAULT_HOST),
-                array_get($config, 'port', HttpLogger::DEFAULT_PORT)
+                Arr::get($config, 'host', HttpLogger::DEFAULT_HOST),
+                Arr::get($config, 'port', HttpLogger::DEFAULT_PORT)
             );
         } else {
             throw new InternalServerErrorException('Unknown Logstash network protocol: [' . $protocol . ']');

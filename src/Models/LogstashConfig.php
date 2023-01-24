@@ -6,6 +6,7 @@ use DreamFactory\Core\Exceptions\BadRequestException;
 use DreamFactory\Core\Components\ServiceEventMapper;
 use DreamFactory\Core\Models\BaseServiceConfigModel;
 use DreamFactory\Core\Models\ServiceEventMap;
+use Arr;
 
 class LogstashConfig extends BaseServiceConfigModel
 {
@@ -33,17 +34,17 @@ class LogstashConfig extends BaseServiceConfigModel
         if ($incoming) {
             foreach ($maps as $key => &$map) {
                 $map['data'] = json_encode([
-                    'level'   => array_get($map, 'level'),
-                    'message' => array_get($map, 'message')
+                    'level'   => Arr::get($map, 'level'),
+                    'message' => Arr::get($map, 'message')
                 ]);
                 unset($map['level'], $map['message']);
             }
         } else {
             foreach ($maps as $key => &$map) {
                 $data = json_decode($map['data'], true);
-                $level = array_get($data, 'level');
+                $level = Arr::get($data, 'level');
                 $map['level'] = ($level ? strtoupper($level) : null);
-                $map['message'] = array_get($data, 'message');
+                $map['message'] = Arr::get($data, 'message');
                 unset($map['data']);
             }
         }
@@ -54,7 +55,7 @@ class LogstashConfig extends BaseServiceConfigModel
     {
         $config = static::getConfigMap($id, $local_config, $protect);
 
-        $maps = (array)array_get($config, 'service_event_map');
+        $maps = (array)Arr::get($config, 'service_event_map');
         static::formatMaps($maps, false);
         $config['service_event_map'] = $maps;
 
