@@ -5,6 +5,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use DreamFactory\Core\Events\ServiceAssignedEvent;
 use DreamFactory\Core\Logger\Services\BaseService as BaseLogService;
 use Log;
+use Arr;
 
 class LoggingEventHandler
 {
@@ -32,27 +33,27 @@ class LoggingEventHandler
             if ($service instanceof BaseLogService) {
                 if ($service->isActive()) {
                     $record = $event->getData();
-                    $data = json_decode(array_get($record, 'data'), true);
+                    $data = json_decode(Arr::get($record, 'data'), true);
                     $defaultLevel = 'INFO';
                     $defaultMessage = $event->name;
 
                     if (!empty($data) && is_array($data)) {
-                        $level = strtoupper(array_get($data, 'level'));
+                        $level = strtoupper(Arr::get($data, 'level'));
                         $level = (empty($level)) ? $defaultLevel : $level;
-                        $message = array_get($data, 'message');
+                        $message = Arr::get($data, 'message');
                         $message = (empty($message)) ? $defaultMessage : $message;
                     }
 
                     $eventData = $event->makeData();
                     $allContext = [
                         '_event'    => [
-                            'request'  => array_get($eventData, 'request'),
-                            'resource' => array_get($eventData, 'resource'),
-                            'response' => array_get($eventData, 'response')
+                            'request'  => Arr::get($eventData, 'request'),
+                            'resource' => Arr::get($eventData, 'resource'),
+                            'response' => Arr::get($eventData, 'response')
                         ],
                         '_platform' => $service->getPlatformInfo()
                     ];
-                    array_set($allContext, '_event.response.content_type', 'application/json');
+                    Arr::set($allContext, '_event.response.content_type', 'application/json');
                     $service->setContextByKeys(null, $allContext);
                     $service->log($level, $message);
                     Log::debug('Logged message on [' . $event->name . '] event.');

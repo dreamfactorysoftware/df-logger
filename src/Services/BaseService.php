@@ -9,6 +9,8 @@ use DreamFactory\Core\Services\BaseRestService;
 use DreamFactory\Core\Utility\Session;
 use Psr\Log\LoggerInterface;
 use Config;
+use Arr;
+use Str;
 
 abstract class BaseService extends BaseRestService
 {
@@ -38,7 +40,7 @@ abstract class BaseService extends BaseRestService
         $this->setLogger($this->config);
         // Too early (request object is not set yet) to set context.
         // Therefore, store the contextKeys from config for now.
-        $this->contextKeys = array_get($this->config, 'context');;
+        $this->contextKeys = Arr::get($this->config, 'context');;
     }
 
     /**
@@ -70,7 +72,7 @@ abstract class BaseService extends BaseRestService
             $level = strtoupper($this->request->getPayloadData('level', 'INFO'));
         }
 
-        $message = str_replace($this->resource . '/', null, $this->resourcePath);
+        $message = str_replace($this->resource . '/', '', $this->resourcePath);
         if (empty($message)) {
             $message = $this->request->getPayloadData('message');
         }
@@ -163,7 +165,7 @@ abstract class BaseService extends BaseRestService
                 $allContext = $this->getDefaultContext();
             }
             foreach ($keys as $key) {
-                array_set($context, $key, array_get($allContext, $key));
+                Arr::set($context, $key, Arr::get($allContext, $key));
             }
         }
 
@@ -206,7 +208,7 @@ abstract class BaseService extends BaseRestService
     /** {@inheritdoc} */
     protected function getApiDocPaths()
     {
-        $capitalized = camelize($this->name);
+        $capitalized = Str::camel($this->name);
 
         $base = [
             '/'                  => [
