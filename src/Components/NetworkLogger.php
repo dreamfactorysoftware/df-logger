@@ -2,6 +2,7 @@
 namespace DreamFactory\Core\Logger\Components;
 
 use DreamFactory\Core\Exceptions\BadRequestException;
+use Illuminate\Support\Facades\Log;
 use Monolog\Logger;
 
 abstract class NetworkLogger
@@ -42,72 +43,78 @@ abstract class NetworkLogger
     }
 
     /** {@inheritdoc} */
-    public function log($level, $message, array $context = [])
+    public function log($level, string|\Stringable $message, array $context = []): void
     {
-        $levelVal = Logger::toMonologLevel($level);
-        if(!is_int($levelVal)){
-            throw new BadRequestException('Unknown log level [' . $level . ']');
-        }
-        $context['_message'] = $message;
-        $context['_level'] = $levelVal;
+        try {
+            $levelVal = Logger::toMonologLevel($level);
+            if(!is_int($levelVal)){
+                throw new BadRequestException('Unknown log level [' . $level . ']');
+            }
+            $context['_message'] = $message;
+            $context['_level'] = $levelVal;
 
-        return $this->send(json_encode($context, JSON_UNESCAPED_SLASHES));
+            $this->send(json_encode($context, JSON_UNESCAPED_SLASHES));
+        } catch (\Throwable $exception) {
+            Log::error($exception->getMessage());
+            Log::error($exception->getTraceAsString());
+        }
+
     }
 
     /** {@inheritdoc} */
-    public function emergency($message, array $context = [])
+    public function emergency(string|\Stringable $message, array $context = []): void
     {
         $this->log(Logger::EMERGENCY, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function alert($message, array $context = [])
+    public function alert(string|\Stringable $message, array $context = []): void
     {
         $this->log(Logger::ALERT, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function critical($message, array $context = [])
+    public function critical(string|\Stringable $message, array $context = []): void
     {
         $this->log(Logger::CRITICAL, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function error($message, array $context = [])
+    public function error(string|\Stringable $message, array $context = []): void
     {
         $this->log(Logger::ERROR, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function warning($message, array $context = [])
+    public function warning(string|\Stringable $message, array $context = []): void
     {
         $this->log(Logger::WARNING, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function notice($message, array $context = [])
+    public function notice(string|\Stringable $message, array $context = []): void
     {
         $this->log(Logger::NOTICE, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function info($message, array $context = [])
+    public function info(string|\Stringable $message, array $context = []): void
     {
         $this->log(Logger::INFO, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function debug($message, array $context = [])
+    public function debug(string|\Stringable $message, array $context = []): void
     {
         $this->log(Logger::DEBUG, $message, $context);
     }
 
     /**
-     * @param $message
+     * @param string|\Stringable $message
      *
      * @return bool
      */
-    public function send($message)
+    public function send(string|\Stringable $message)
     {
         try {
             $_url = $this->protocol . '://' . $this->host . ':' . $this->port;
@@ -116,7 +123,9 @@ abstract class NetworkLogger
             if (!fwrite($_sock, $message)) {
                 return false;
             }
-        } catch (\Exception $_ex) {
+        } catch (\Exception $ex) {
+            Log::error($ex->getMessage());
+            Log::error($ex->getTraceAsString());
             //  Failure is not an option
             return false;
         }
