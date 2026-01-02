@@ -16,7 +16,7 @@ class GelfLogger extends UdpLogger implements LoggerInterface
     const MAX_CHUNKS_ALLOWED = 128;
 
     /** {@inheritdoc} */
-    public function log($level, $message, array $context = [])
+    public function log($level, string|\Stringable $message, array $context = []): void
     {
         try {
             $levelVal = GelfLevels::toValue($level);
@@ -26,53 +26,53 @@ class GelfLogger extends UdpLogger implements LoggerInterface
         $_message = new GelfMessage($context);
         $_message->setLevel($levelVal)->setFullMessage($message);
 
-        return $this->send($_message);
+        $this->send($_message);
     }
 
     /** {@inheritdoc} */
-    public function emergency($message, array $context = [])
+    public function emergency(string|\Stringable $message, array $context = []): void
     {
         $this->log(GelfLevels::EMERGENCY, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function alert($message, array $context = [])
+    public function alert(string|\Stringable $message, array $context = []): void
     {
         $this->log(GelfLevels::ALERT, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function critical($message, array $context = [])
+    public function critical(string|\Stringable $message, array $context = []): void
     {
         $this->log(GelfLevels::CRITICAL, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function error($message, array $context = [])
+    public function error(string|\Stringable $message, array $context = []): void
     {
         $this->log(GelfLevels::ERROR, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function warning($message, array $context = [])
+    public function warning(string|\Stringable $message, array $context = []): void
     {
         $this->log(GelfLevels::WARNING, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function notice($message, array $context = [])
+    public function notice(string|\Stringable $message, array $context = []): void
     {
         $this->log(GelfLevels::NOTICE, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function info($message, array $context = [])
+    public function info(string|\Stringable $message, array $context = []): void
     {
         $this->log(GelfLevels::INFO, $message, $context);
     }
 
     /** {@inheritdoc} */
-    public function debug($message, array $context = [])
+    public function debug(string|\Stringable $message, array $context = []): void
     {
         $this->log(GelfLevels::DEBUG, $message, $context);
     }
