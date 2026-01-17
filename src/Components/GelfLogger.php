@@ -84,25 +84,54 @@ class GelfLogger extends UdpLogger implements LoggerInterface
             throw new \InvalidArgumentException('Message is not a GelfMessage.');
         }
 
+        $startTime = microtime(true);
+        $_url = $this->protocol . '://' . $this->host . ':' . $this->port;
+        $_sock = null;
+
         try {
             if (false === ($_chunks = $this->prepareMessage($message))) {
-                return false;
+                return $this->handleFailure("Failed to prepare GELF message", $message->toJson());
             }
 
-            $_url = $this->protocol . '://' . $this->host . ':' . $this->port;
-            $_sock = stream_socket_client($_url);
+            \Illuminate\Support\Facades\Log::debug("Logstash GELF: Connecting to {$_url} (timeout: {$this->timeout}s)");
+
+            $_sock = @stream_socket_client(
+                $_url,
+                $errno,
+                $errstr,
+                $this->timeout
+            );
+
+            if (!$_sock) {
+                $elapsed = round(microtime(true) - $startTime, 3);
+                \Illuminate\Support\Facades\Log::warning("Logstash GELF: Connection failed to {$_url} after {$elapsed}s - [$errno] $errstr");
+                return $this->handleFailure("Connection failed: [$errno] $errstr", $message->toJson());
+            }
+
+            stream_set_timeout($_sock, (int)$this->timeout, (int)(($this->timeout - (int)$this->timeout) * 1000000));
 
             foreach ($_chunks as $_chunk) {
                 if (!fwrite($_sock, $_chunk)) {
-                    return false;
+                    $elapsed = round(microtime(true) - $startTime, 3);
+                    \Illuminate\Support\Facades\Log::warning("Logstash GELF: Write failed to {$_url} after {$elapsed}s");
+                    return $this->handleFailure("Write failed", $message->toJson());
                 }
             }
-        } catch (\Exception $_ex) {
-            //  Failure is not an option
-            return false;
-        }
 
-        return true;
+            $elapsed = round(microtime(true) - $startTime, 3);
+            \Illuminate\Support\Facades\Log::debug("Logstash GELF: Successfully sent to {$_url} in {$elapsed}s");
+
+            return true;
+
+        } catch (\Exception $_ex) {
+            $elapsed = round(microtime(true) - $startTime, 3);
+            \Illuminate\Support\Facades\Log::error("Logstash GELF: Exception after {$elapsed}s - " . $_ex->getMessage());
+            return $this->handleFailure($_ex->getMessage(), $message->toJson());
+        } finally {
+            if (is_resource($_sock)) {
+                fclose($_sock);
+            }
+        }
     }
 
     /**
