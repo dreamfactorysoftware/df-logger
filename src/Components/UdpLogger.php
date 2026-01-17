@@ -11,8 +11,8 @@ class UdpLogger extends NetworkLogger implements LoggerInterface
     const PROTOCOL = 'udp';
 
     /** {@inheritdoc} */
-    public function __construct($host = self::DEFAULT_HOST, $port = self::DEFAULT_PORT)
+    public function __construct($host = self::DEFAULT_HOST, $port = self::DEFAULT_PORT, $timeout = null, $onFailure = null)
     {
-        parent::__construct($host, $port, static::PROTOCOL);
+        parent::__construct($host, $port, static::PROTOCOL, $timeout, $onFailure);
     }
 }

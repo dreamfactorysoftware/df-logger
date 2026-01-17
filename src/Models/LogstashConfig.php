@@ -20,13 +20,14 @@ class LogstashConfig extends BaseServiceConfigModel
     protected $table = 'logstash_config';
 
     /** @var array */
-    protected $fillable = ['service_id', 'host', 'port', 'protocol', 'context'];
+    protected $fillable = ['service_id', 'host', 'port', 'protocol', 'timeout', 'on_failure', 'context'];
 
     /** @var array */
     protected $casts = [
-        'service_id' => 'integer',
-        'port'       => 'integer',
-        'context'    => 'array'
+        'service_id'  => 'integer',
+        'port'        => 'integer',
+        'timeout'     => 'float',
+        'context'     => 'array'
     ];
 
     protected static function formatMaps(&$maps, $incoming = true)
@@ -193,6 +194,31 @@ class LogstashConfig extends BaseServiceConfigModel
                 ];
                 $schema['label'] = 'Protocol/Format';
                 $schema['description'] = 'Network protocol/format that Logstash input is configured for.';
+                break;
+            case 'timeout':
+                $schema['label'] = 'Connection Timeout';
+                $schema['default'] = 2.0;
+                $schema['description'] = 'Maximum time in seconds to wait for connection to Logstash. Lower values prevent request blocking if Logstash is unavailable.';
+                break;
+            case 'on_failure':
+                $schema['type'] = 'picklist';
+                $schema['default'] = 'ignore';
+                $schema['values'] = [
+                    [
+                        'label' => 'Ignore (let request proceed, log is lost)',
+                        'name'  => 'ignore'
+                    ],
+                    [
+                        'label' => 'Fail Request (return 503 error)',
+                        'name'  => 'fail_request'
+                    ],
+                    [
+                        'label' => 'Fallback to File (write to Laravel log)',
+                        'name'  => 'fallback_file'
+                    ]
+                ];
+                $schema['label'] = 'On Failure';
+                $schema['description'] = 'Behavior when Logstash connection fails. "Ignore" allows requests to proceed without logging. "Fail Request" blocks requests if logging fails (for compliance). "Fallback to File" writes to local Laravel log.';
                 break;
             case 'context':
                 $schema['type'] = 'multi_picklist';
