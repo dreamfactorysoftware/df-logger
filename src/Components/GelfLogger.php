@@ -3,6 +3,7 @@ namespace DreamFactory\Core\Logger\Components;
 
 use Psr\Log\LoggerInterface;
 use DreamFactory\Core\Exceptions\BadRequestException;
+use Stringable;
 
 class GelfLogger extends UdpLogger implements LoggerInterface
 {
@@ -15,69 +16,129 @@ class GelfLogger extends UdpLogger implements LoggerInterface
      */
     const MAX_CHUNKS_ALLOWED = 128;
 
-    /** {@inheritdoc} */
-    public function log($level, $message, array $context = [])
+    /**
+     * Logs an arbitrary level message.
+     *
+     * @param mixed $level
+     * @param Stringable|string $message
+     * @param array $context
+     * @return void
+     */
+    public function log($level, Stringable|string $message, array $context = []): void
     {
         try {
             $levelVal = GelfLevels::toValue($level);
-        } catch (\InvalidArgumentException $e){
+        } catch (\InvalidArgumentException $e) {
             throw new BadRequestException('Unknown log level [' . $level . ']');
         }
         $_message = new GelfMessage($context);
         $_message->setLevel($levelVal)->setFullMessage($message);
 
-        return $this->send($_message);
+        $this->send($_message);
     }
 
-    /** {@inheritdoc} */
-    public function emergency($message, array $context = [])
+    /**
+     * System is unusable.
+     *
+     * @param Stringable|string $message
+     * @param array $context
+     * @return void
+     */
+    public function emergency(Stringable|string $message, array $context = []): void
     {
         $this->log(GelfLevels::EMERGENCY, $message, $context);
     }
 
-    /** {@inheritdoc} */
-    public function alert($message, array $context = [])
+    /**
+     * Action must be taken immediately.
+     *
+     * @param Stringable|string $message
+     * @param array $context
+     * @return void
+     */
+    public function alert(Stringable|string $message, array $context = []): void
     {
         $this->log(GelfLevels::ALERT, $message, $context);
     }
 
-    /** {@inheritdoc} */
-    public function critical($message, array $context = [])
+    /**
+     * Critical conditions.
+     *
+     * @param Stringable|string $message
+     * @param array $context
+     * @return void
+     */
+    public function critical(Stringable|string $message, array $context = []): void
     {
         $this->log(GelfLevels::CRITICAL, $message, $context);
     }
 
-    /** {@inheritdoc} */
-    public function error($message, array $context = [])
+    /**
+     * Error conditions.
+     *
+     * @param Stringable|string $message
+     * @param array $context
+     * @return void
+     */
+    public function error(Stringable|string $message, array $context = []): void
     {
         $this->log(GelfLevels::ERROR, $message, $context);
     }
 
-    /** {@inheritdoc} */
-    public function warning($message, array $context = [])
+    /**
+     * Warning conditions.
+     *
+     * @param Stringable|string $message
+     * @param array $context
+     * @return void
+     */
+    public function warning(Stringable|string $message, array $context = []): void
     {
         $this->log(GelfLevels::WARNING, $message, $context);
     }
 
-    /** {@inheritdoc} */
-    public function notice($message, array $context = [])
+    /**
+     * Normal but significant conditions.
+     *
+     * @param Stringable|string $message
+     * @param array $context
+     * @return void
+     */
+    public function notice(Stringable|string $message, array $context = []): void
     {
         $this->log(GelfLevels::NOTICE, $message, $context);
     }
 
-    /** {@inheritdoc} */
-    public function info($message, array $context = [])
+    /**
+     * Informational messages.
+     *
+     * @param Stringable|string $message
+     * @param array $context
+     * @return void
+     */
+    public function info(Stringable|string $message, array $context = []): void
     {
         $this->log(GelfLevels::INFO, $message, $context);
     }
 
-    /** {@inheritdoc} */
-    public function debug($message, array $context = [])
+    /**
+     * Debug-level messages.
+     *
+     * @param Stringable|string $message
+     * @param array $context
+     * @return void
+     */
+    public function debug(Stringable|string $message, array $context = []): void
     {
         $this->log(GelfLevels::DEBUG, $message, $context);
     }
 
-    /** {@inheritdoc} */
+    /**
+     * Sends a Gelf message to the server.
+     *
+     * @param GelfMessage $message
+     * @return bool
+     */
     public function send($message)
     {
         if (!($message instanceof GelfMessage)) {
@@ -98,7 +159,7 @@ class GelfLogger extends UdpLogger implements LoggerInterface
                 }
             }
         } catch (\Exception $_ex) {
-            //  Failure is not an option
+            // Failure is not an option
             return false;
         }
 
@@ -106,10 +167,9 @@ class GelfLogger extends UdpLogger implements LoggerInterface
     }
 
     /**
-     * Static method for preparing a GELF message to be sent
+     * Prepares a GELF message to be sent, handling large message sizes.
      *
      * @param GelfMessage $message
-     *
      * @return mixed
      */
     protected function prepareMessage(GelfMessage $message)
@@ -119,12 +179,10 @@ class GelfLogger extends UdpLogger implements LoggerInterface
                 return false;
             }
 
-            //  If we are less than the max chunk size, we're done
             if (strlen($_gzJson) <= static::MAX_CHUNK_SIZE) {
                 return [$_gzJson];
             }
         } catch (\Exception $_ex) {
-            //  Eschew failure
             return false;
         }
 
@@ -132,18 +190,16 @@ class GelfLogger extends UdpLogger implements LoggerInterface
     }
 
     /**
-     * Static method for packing a chunk of GELF data
+     * Splits a large GELF message into smaller chunks for transmission.
      *
-     * @param array  $chunks The array of chunks of gzipped JSON GELF data to prepare
-     * @param string $msgId  The 8-byte message id, same for entire chunk set
-     *
+     * @param array $chunks
+     * @param string $msgId
      * @return mixed An array of packed chunks ready to send
      */
     protected function prepareChunks($chunks, $msgId = null)
     {
         try {
             $msgId = $msgId ?: hash('sha256', microtime(true) . rand(10000, 99999), true);
-
             $_sequence = 0;
             $_count = count($chunks);
 
@@ -159,7 +215,6 @@ class GelfLogger extends UdpLogger implements LoggerInterface
 
             return $_prepared;
         } catch (\Exception $_ex) {
-            //  Failure is not an option
             return false;
         }
     }
