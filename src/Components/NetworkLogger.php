@@ -47,6 +47,10 @@ abstract class NetworkLogger
     {
         try {
             $levelVal = Logger::toMonologLevel($level);
+            // Monolog v3 returns a Level enum; extract the integer value
+            if ($levelVal instanceof \Monolog\Level) {
+                $levelVal = $levelVal->value;
+            }
             if(!is_int($levelVal)){
                 throw new BadRequestException('Unknown log level [' . $level . ']');
             }
