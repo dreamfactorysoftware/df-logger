@@ -179,6 +179,7 @@ abstract class BaseService extends BaseRestService
     {
         if ($this->request instanceof ServiceRequestInterface) {
             $request = $this->request->toArray();
+            $request = self::redactSensitiveRequestFields($request);
 
             return [
                 'request'  => $request,
@@ -190,17 +191,75 @@ abstract class BaseService extends BaseRestService
     }
 
     /**
+     * Strip credentials and session tokens from a serialized request before
+     * it is shipped to a remote log aggregator (Logstash, Graylog, etc.).
+     *
+     * Without this, the Authorization header (Bearer JWT), the
+     * X-DreamFactory-Session-Token / X-DreamFactory-API-Key headers, the
+     * Cookie header, and the same fields under request payload / parameters
+     * would all leak to anyone with log read access — and many log
+     * aggregators retain payloads for months.
+     */
+    public static function redactSensitiveRequestFields(array $request): array
+    {
+        self::redactInPlace($request);
+        return $request;
+    }
+
+    /** @internal recursive helper for redactSensitiveRequestFields */
+    private static function redactInPlace(array &$bag): void
+    {
+        static $sensitiveKeys = [
+            'authorization',
+            'cookie',
+            'set-cookie',
+            'x-dreamfactory-session-token',
+            'x-dreamfactory-api-key',
+            'x-mcp-internal-key',
+            'session_token',
+            'api_key',
+            'password',
+            'secret',
+            'client_secret',
+            'access_token',
+            'refresh_token',
+            'id_token',
+        ];
+        foreach ($bag as $k => $v) {
+            if (is_string($k) && in_array(strtolower($k), $sensitiveKeys, true)) {
+                $bag[$k] = '***REDACTED***';
+            } elseif (is_array($v)) {
+                self::redactInPlace($bag[$k]);
+            }
+        }
+    }
+
+    /**
      * @return array
      */
     public function getPlatformInfo()
     {
+        // Curated allowlist instead of the full df.* config tree (which
+        // includes DB connection strings, encryption keys, mail creds).
         $platform = [
-            'config'  => Config::get('df'),
+            'config'  => [
+                'version'      => Config::get('df.version'),
+                'api_version'  => Config::get('df.api_version'),
+                'license'      => Config::get('df.license'),
+                'is_managed'   => to_bool(env('DF_MANAGED', false)),
+            ],
             'session' => Session::all(),
         ];
 
-        unset($platform['session']['lookup']);
-        unset($platform['session']['lookup_secret']);
+        // Strip auth-bearing fields from the session payload before logging.
+        $sessionRedactKeys = [
+            'lookup', 'lookup_secret',
+            'session_token', 'api_key', 'jwt',
+            'token', 'access_token', 'refresh_token',
+        ];
+        foreach ($sessionRedactKeys as $k) {
+            unset($platform['session'][$k]);
+        }
 
         return $platform;
     }
